@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/ifcopenshell/!svn/ver/164/trunk/src/ifcparse
+END
+IfcParse.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/ifcopenshell/!svn/ver/162/trunk/src/ifcparse/IfcParse.cpp
+END
+IfcWritableEntity.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcWritableEntity.h
+END
+Ifc2x3.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/Ifc2x3.cpp
+END
+IfcUtil.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcUtil.cpp
+END
+IfcHierarchyHelper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcHierarchyHelper.cpp
+END
+IfcParse.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/ifcopenshell/!svn/ver/164/trunk/src/ifcparse/IfcParse.h
+END
+Ifc2x3.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/Ifc2x3.h
+END
+IfcUtil.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcUtil.h
+END
+IfcCharacterDecoder.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcCharacterDecoder.cpp
+END
+IfcHierarchyHelper.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcHierarchyHelper.h
+END
+IfcFile.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/ifcopenshell/!svn/ver/146/trunk/src/ifcparse/IfcFile.h
+END
+IfcCharacterDecoder.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcCharacterDecoder.h
+END
+IfcGuidHelper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcGuidHelper.cpp
+END
+IfcWrite.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcWrite.cpp
+END
+SharedPointer.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/SharedPointer.h
+END
+IfcWrite.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcWrite.h
+END
+IfcException.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/IfcException.h
+END
+Ifc2x3enum.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcparse/Ifc2x3enum.h
+END

@@ -1,0 +1,445 @@
+/********************************************************************************
+ *                                                                              *
+ * This file is part of IfcOpenShell.                                           *
+ *                                                                              *
+ * IfcOpenShell is free software: you can redistribute it and/or modify         *
+ * it under the terms of the Lesser GNU General Public License as published by  *
+ * the Free Software Foundation, either version 3.0 of the License, or          *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * IfcOpenShell is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the                 *
+ * Lesser GNU General Public License for more details.                          *
+ *                                                                              *
+ * You should have received a copy of the Lesser GNU General Public License     *
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.         *
+ *                                                                              *
+ ********************************************************************************/
+
+#include "../ifcparse/IfcParse.h" 
+#include "../ifcparse/IfcWrite.h"
+#include "../ifcparse/IfcWritableEntity.h"
+#include "../ifcparse/IfcCharacterDecoder.h"
+
+using namespace IfcWrite;
+
+IfcWritableEntity::IfcWritableEntity(Ifc2x3::Type::Enum t) {
+	_type = t;
+	_id = 0;
+	file = 0;
+}
+int IfcWritableEntity::setId(int i) {
+	return *(_id = new int(i > 0 ? i : file->FreshId()));
+}
+IfcWritableEntity::IfcWritableEntity(IfcAbstractEntity* e) 
+{
+	file = e->file;
+	_type = e->type();
+	_id = new int(e->id());
+
+	const unsigned int count = e->getArgumentCount();
+	for ( unsigned int i = 0; i < count; ++ i ) {
+		args[i] = e->getArgument(i);
+		writemask[i] = false;
+	}
+}
+// TODO: Reove redundancy with IfcParse::Entity
+IfcEntities IfcWritableEntity::getInverse(Ifc2x3::Type::Enum c) {
+	IfcEntities l = IfcEntities(new IfcEntityList());
+	int id = _id ? *_id : setId();
+	IfcEntities all = file->EntitiesByReference(id);
+	if ( ! all ) return l;
+	for( IfcEntityList::it it = all->begin(); it != all->end();++  it  ) {
+		if ( c == Ifc2x3::Type::ALL || (*it)->is(c) ) {
+			l->push(*it);
+		}
+	}
+	return l;
+}
+IfcEntities IfcWritableEntity::getInverse(Ifc2x3::Type::Enum c, int i, const std::string& a) {
+	IfcEntities l = IfcEntities(new IfcEntityList());
+	IfcEntities all = getInverse(c);
+	for( IfcEntityList::it it = all->begin(); it != all->end();++ it  ) {
+		const std::string s = *(*it)->entity->getArgument(i);
+		if ( s == a ) {
+			l->push(*it);
+		}
+	}
+	return l;
+}
+
+std::string IfcWritableEntity::datatype() { return Ifc2x3::Type::ToString(_type); }
+ArgumentPtr IfcWritableEntity::getArgument (unsigned int i) { if ( i >= getArgumentCount() ) throw IfcParse::IfcException("Argument not set"); return args[i]; }
+unsigned int IfcWritableEntity::getArgumentCount() {return args.size(); }
+Ifc2x3::Type::Enum IfcWritableEntity::type() const { return _type; }
+bool IfcWritableEntity::is(Ifc2x3::Type::Enum v) const { return _type == v; }
+std::string IfcWritableEntity::toString(bool upper) {
+	std::stringstream ss;
+	std::string dt = datatype();
+	if ( upper ) {
+		for (std::string::iterator p = dt.begin(); p != dt.end(); ++p ) *p = toupper(*p);
+	}
+	if ( _id ) ss << "#" << *_id;
+	ss << "=" << dt << "(";
+	for ( std::map<int,ArgumentPtr>::const_iterator it = args.begin(); it != args.end(); ++ it ) {
+		if ( it != args.begin() ) ss << ",";
+		const ArgumentPtr a = it->second;
+		ss << it->second->toString(upper);
+	}
+	ss << ")";
+	return ss.str();
+}
+unsigned int IfcWritableEntity::id() { if ( !_id ) _id = new int(file->FreshId()); return *_id; }
+bool IfcWritableEntity::isWritable() { return true; }
+bool IfcWritableEntity::arg_writable(int i) {
+	std::map<int,bool>::const_iterator it = writemask.find(i);
+	if ( it == writemask.end() ) return false;
+	else return it->second;
+}
+void IfcWritableEntity::arg_writable(int i, bool b) {
+	writemask[i] = b;
+}
+void IfcWritableEntity::setArgument(int i) {
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteNullArgument(this);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgumentDerived(int i) {
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteDerivedArgument(this);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,int v) {
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,bool v) {
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,int v, const char* c){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteEnumerationArgument(this,v,c);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,const std::string& v){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,double v){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,IfcUtil::IfcSchemaEntity v){
+	if ( arg_writable(i) ) delete args[i];
+	if ( v ) args[i] = new IfcWriteIntegralArgument(this,v);
+	else args[i] = new IfcWriteNullArgument(this);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,IfcEntities v){
+	if ( arg_writable(i) ) delete args[i];
+	if ( v.get() ) args[i] = new IfcWriteEntityListArgument(this,v);
+	else args[i] = new IfcWriteNullArgument(this);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,const std::vector<double>& v){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,const std::vector<std::string>& v){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+void IfcWritableEntity::setArgument(int i,const std::vector<int>& v){
+	if ( arg_writable(i) ) delete args[i];
+	args[i] = new IfcWriteIntegralArgument(this,v);
+	arg_writable(i,true);
+}
+
+IfcWriteNullArgument::operator int() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator bool() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator double() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator std::string() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator std::vector<double>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator std::vector<int>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator std::vector<std::string>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator IfcUtil::IfcSchemaEntity() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteNullArgument::operator IfcEntities() const { throw IfcParse::IfcException("Invalid cast"); }
+bool IfcWriteNullArgument::isNull() const { return true; }
+ArgumentPtr IfcWriteNullArgument::operator [] (unsigned int i) const { throw IfcParse::IfcException("Invalid cast"); }
+std::string IfcWriteNullArgument::toString(bool upper) const { return "$"; }
+unsigned int IfcWriteNullArgument::Size() const { throw IfcParse::IfcException("Invalid cast"); }
+
+IfcWriteDerivedArgument::operator int() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator bool() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator double() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator std::string() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator std::vector<double>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator std::vector<int>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator std::vector<std::string>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator IfcUtil::IfcSchemaEntity() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteDerivedArgument::operator IfcEntities() const { throw IfcParse::IfcException("Invalid cast"); }
+bool IfcWriteDerivedArgument::isNull() const { throw IfcParse::IfcException("Invalid cast"); }
+ArgumentPtr IfcWriteDerivedArgument::operator [] (unsigned int i) const { throw IfcParse::IfcException("Invalid cast"); }
+std::string IfcWriteDerivedArgument::toString(bool upper) const { return "*"; }
+unsigned int IfcWriteDerivedArgument::Size() const { throw IfcParse::IfcException("Invalid cast"); }
+
+IfcWriteEntityListArgument::IfcWriteEntityListArgument(IfcAbstractEntity* e, const IfcEntities& v) : IfcWriteArgument(e) { value = v; }
+IfcWriteEntityListArgument::operator int() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator bool() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator double() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator std::string() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator std::vector<double>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator std::vector<int>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator std::vector<std::string>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator IfcUtil::IfcSchemaEntity() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEntityListArgument::operator IfcEntities() const { return value; }
+bool IfcWriteEntityListArgument::isNull() const { return false; }
+unsigned int IfcWriteEntityListArgument::Size() const { return value->Size(); }
+ArgumentPtr IfcWriteEntityListArgument::operator [] (unsigned int i) const { throw IfcParse::IfcException("Invalid cast"); }
+std::string IfcWriteEntityListArgument::toString(bool upper)  const {
+	std::ostringstream ss;
+	ss << "(";
+	for ( IfcEntityList::it it = value->begin(); it != value->end(); ++ it ) {
+		if ( it != value->begin() ) ss << ",";
+		IfcAbstractEntity* e = (*it)->entity;
+		if ( Ifc2x3::Type::IsSimple(e->type()) ) {
+			ss << e->toString(upper);
+		} else {
+			if (!e->file) e->file = entity->file;
+			ss << "#" << e->id();
+		}
+	}
+	ss << ")";
+	return ss.str();
+}
+
+IfcWriteEnumerationArgument::IfcWriteEnumerationArgument(IfcAbstractEntity* e, int v, const char* c) : IfcWriteArgument(e) {data=v; enumeration_value = c;}
+IfcWriteEnumerationArgument::operator int() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator bool() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator double() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator std::string() const { return std::string(enumeration_value); }
+IfcWriteEnumerationArgument::operator std::vector<double>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator std::vector<int>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator std::vector<std::string>() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator IfcUtil::IfcSchemaEntity() const { throw IfcParse::IfcException("Invalid cast"); }
+IfcWriteEnumerationArgument::operator IfcEntities() const { throw IfcParse::IfcException("Invalid cast"); }
+bool IfcWriteEnumerationArgument::isNull() const { return false; }
+ArgumentPtr IfcWriteEnumerationArgument::operator [] (unsigned int i) const { throw IfcParse::IfcException("Invalid cast"); }
+std::string IfcWriteEnumerationArgument::toString(bool upper) const { return std::string(".") + enumeration_value + '.';}
+unsigned int IfcWriteEnumerationArgument::Size() const { throw IfcParse::IfcException("Invalid cast"); }
+
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, int v) : IfcWriteArgument(e) {data=new int(v); type = Argument_INT;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, bool v) : IfcWriteArgument(e) {data=new bool(v); type = Argument_BOOL;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, double v) : IfcWriteArgument(e) {data=new double(v); type = Argument_DOUBLE;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, const std::string& v) : IfcWriteArgument(e) {data=new std::string(v); type = Argument_STRING;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, const std::vector<int> v) : IfcWriteArgument(e) {data=new std::vector<int>(v); type = Argument_VECTOR_INT;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, const std::vector<double> v) : IfcWriteArgument(e) {data=new std::vector<double>(v); type = Argument_VECTOR_DOUBLE;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, const std::vector<std::string> v) : IfcWriteArgument(e) {data=new std::vector<std::string>(v); type = Argument_VECTOR_STRING;}
+IfcWriteIntegralArgument::IfcWriteIntegralArgument(IfcAbstractEntity* e, IfcUtil::IfcSchemaEntity v) : IfcWriteArgument(e) {data=v; type = Argument_ENTITY;}
+IfcWriteIntegralArgument::~IfcWriteIntegralArgument() {
+	switch ( type ) {
+	case Argument_INT:
+		delete (int*) data;
+		break;
+	case Argument_BOOL:
+		delete (bool*) data;
+		break;
+	case Argument_DOUBLE:
+		delete (double*) data;
+		break;
+	case Argument_STRING:
+		delete (std::string*) data;
+		break;
+	case Argument_VECTOR_INT:
+		delete (std::vector<int>*) data;
+		break;
+	case Argument_VECTOR_DOUBLE:
+		delete (std::vector<double>*) data;
+		break;
+	case Argument_VECTOR_STRING:
+		delete (std::vector<std::string>*) data;
+		break;
+	case Argument_ENTITY:
+		break;
+	}
+}
+IfcWriteIntegralArgument::operator int() const { if ( type != Argument_INT ) throw IfcParse::IfcException("Invalid cast"); return *(int*)data; }
+IfcWriteIntegralArgument::operator bool() const { if ( type != Argument_BOOL ) throw IfcParse::IfcException("Invalid cast"); return *(bool*)data; }
+IfcWriteIntegralArgument::operator double() const { if ( type != Argument_DOUBLE ) throw IfcParse::IfcException("Invalid cast"); return *(double*)data; }
+IfcWriteIntegralArgument::operator std::string() const { if ( type != Argument_STRING ) throw IfcParse::IfcException("Invalid cast"); return *(std::string*)data; }
+IfcWriteIntegralArgument::operator std::vector<double>() const { if ( type != Argument_VECTOR_DOUBLE ) throw IfcParse::IfcException("Invalid cast"); return *(std::vector<double>*)data; }
+IfcWriteIntegralArgument::operator std::vector<int>() const { if ( type != Argument_VECTOR_INT ) throw IfcParse::IfcException("Invalid cast"); return *(std::vector<int>*)data; }
+IfcWriteIntegralArgument::operator std::vector<std::string>() const { if ( type != Argument_VECTOR_STRING ) throw IfcParse::IfcException("Invalid cast"); return *(std::vector<std::string>*)data; }
+IfcWriteIntegralArgument::operator IfcUtil::IfcSchemaEntity() const { if ( type != Argument_ENTITY ) throw IfcParse::IfcException("Invalid cast"); return (IfcUtil::IfcSchemaEntity)data; }
+IfcWriteIntegralArgument::operator IfcEntities() const { throw IfcParse::IfcException("Invalid cast"); }
+bool IfcWriteIntegralArgument::isNull() const { return false; }
+unsigned int IfcWriteIntegralArgument::Size() const { 
+	switch ( type ) {
+	case Argument_VECTOR_INT:
+		return ((std::vector<int>*) data)->size();
+		break;
+	case Argument_VECTOR_DOUBLE:
+		return ((std::vector<double>*) data)->size();
+		break;
+	case Argument_VECTOR_STRING:
+		return ((std::vector<std::string>*) data)->size();
+		break;
+	default:
+		throw IfcParse::IfcException("Invalid cast");
+		break;
+	}
+}
+
+// The REAL token definition from the IFC SPF standard does not necessarily match
+// the output of the C++ ostream formatting operation.
+// REAL = [ SIGN ] DIGIT { DIGIT } "." { DIGIT } [ "E" [ SIGN ] DIGIT { DIGIT } ] .
+std::string format_double(const double& d) {
+	std::ostringstream oss;
+	oss << d;
+	const std::string str = oss.str();
+	oss.str("");
+	std::string::size_type e = str.find('e');
+	if (e == std::string::npos) {
+		e = str.find('E');
+	}
+	const std::string mantissa = str.substr(0,e);
+	oss << mantissa;
+	if (mantissa.find('.') == std::string::npos) {
+		oss << ".";
+	}
+	if (e != std::string::npos) {
+		oss << "E";
+		oss << str.substr(e+1);
+	}
+	return oss.str();
+}
+
+ArgumentPtr IfcWriteIntegralArgument::operator [] (unsigned int i) const { throw IfcParse::IfcException("Invalid cast"); }
+std::string IfcWriteIntegralArgument::toString(bool upper) const {
+	std::ostringstream ss;
+	switch ( type ) {
+	case Argument_INT:
+		ss << *(int*)data;
+		break;
+	case Argument_BOOL:
+		ss << ((*(bool*) data) ? ".T." : ".F.");
+		break;
+	case Argument_DOUBLE:
+		ss << format_double(*(double*) data);		
+		break;
+	case Argument_STRING: {
+		std::string d = *(std::string*) data;
+		if ( upper ) d = IfcCharacterEncoder(d);
+		ss << d;
+		break; 
+	} case Argument_VECTOR_INT:
+		ss << "(";
+		{const std::vector<int>& v = *(std::vector<int>*) data;
+		for ( std::vector<int>::const_iterator it = v.begin(); it != v.end(); ++ it ) {
+			if ( it != v.begin() ) ss << ",";
+			ss << *it;
+		}}
+		ss << ")";
+		break;
+	case Argument_VECTOR_DOUBLE:
+		ss << "(";
+		{const std::vector<double>& v = *(std::vector<double>*) data;
+		for ( std::vector<double>::const_iterator it = v.begin(); it != v.end(); ++ it ) {
+			if ( it != v.begin() ) ss << ",";
+			ss << format_double(*it);
+		}}
+		ss << ")";
+		break;
+	case Argument_VECTOR_STRING:
+		ss << "(";
+		{const std::vector<std::string>& v = *(std::vector<std::string>*) data;
+		for ( std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++ it ) {
+			if ( it != v.begin() ) ss << ",";
+			ss << '\'' << *it << '\'';
+		}}
+		ss << ")";
+		break;
+	case Argument_ENTITY:
+		{IfcAbstractEntity* e = ((IfcUtil::IfcSchemaEntity)data)->entity;
+		if ( Ifc2x3::Type::IsSimple(e->type()) ) {
+			ss << e->toString(upper);
+		} else {
+			if (!e->file) e->file = entity->file;
+			ss << "#" << e->id();
+		}}
+		break;
+	default: throw IfcParse::IfcException("Invalid cast");
+	}
+	return ss.str();
+}
+
+IfcEntities IfcSelectHelperEntity::getInverse(Ifc2x3::Type::Enum,int,const std::string &) {throw IfcParse::IfcException("Invalid cast");}
+IfcEntities IfcSelectHelperEntity::getInverse(Ifc2x3::Type::Enum) {throw IfcParse::IfcException("Invalid cast");}
+std::string IfcSelectHelperEntity::datatype() { return Ifc2x3::Type::ToString(_type); }
+ArgumentPtr IfcSelectHelperEntity::getArgument(unsigned int i) {
+	if ( i != 0 ) throw IfcParse::IfcException("Invalid cast");
+	return arg;
+}
+unsigned int IfcSelectHelperEntity::getArgumentCount() { return 1; }
+Ifc2x3::Type::Enum IfcSelectHelperEntity::type() const { return _type; }
+bool IfcSelectHelperEntity::is(Ifc2x3::Type::Enum t) const { return _type == t; }
+std::string IfcSelectHelperEntity::toString(bool upper) {
+	std::stringstream ss;
+	std::string dt = datatype();
+	if ( upper ) {
+		for (std::string::iterator p = dt.begin(); p != dt.end(); ++p ) *p = toupper(*p);
+	}
+	ss << dt << "(" << arg->toString(upper) << ")";
+	return ss.str();
+}
+unsigned int IfcSelectHelperEntity::id() { throw IfcParse::IfcException("Invalid cast"); }
+bool IfcSelectHelperEntity::isWritable() { throw IfcParse::IfcException("Invalid cast"); }
+
+IfcSelectHelper::IfcSelectHelper(const std::string& v, Ifc2x3::Type::Enum t) {
+	IfcWriteArgument* a = new IfcWriteIntegralArgument(0,v);
+	this->entity = new IfcSelectHelperEntity(t,a);
+}
+IfcSelectHelper::IfcSelectHelper(const char* const v, Ifc2x3::Type::Enum t) {
+	IfcWriteArgument* a = new IfcWriteIntegralArgument(0,std::string(v));
+	this->entity = new IfcSelectHelperEntity(t,a);
+}
+IfcSelectHelper::IfcSelectHelper(int v, Ifc2x3::Type::Enum t) {
+	IfcWriteArgument* a = new IfcWriteIntegralArgument(0,v);
+	this->entity = new IfcSelectHelperEntity(t,a);
+}
+IfcSelectHelper::IfcSelectHelper(double v, Ifc2x3::Type::Enum t) {
+	IfcWriteArgument* a = new IfcWriteIntegralArgument(0,v);
+	this->entity = new IfcSelectHelperEntity(t,a);
+}
+IfcSelectHelper::IfcSelectHelper(bool v, Ifc2x3::Type::Enum t) {
+	IfcWriteArgument* a = new IfcWriteIntegralArgument(0,v);
+	this->entity = new IfcSelectHelperEntity(t,a);
+}
+bool IfcSelectHelper::is(Ifc2x3::Type::Enum t) const { return entity->is(t); }
+Ifc2x3::Type::Enum IfcSelectHelper::type() const { return entity->type(); } 
+
+EntityBuffer* EntityBuffer::i = 0;
+EntityBuffer* EntityBuffer::instance() {
+	if ( ! i ) {
+		i = new EntityBuffer();
+		i->buffer = IfcEntities(new IfcEntityList());
+	}
+	return i;
+}
+IfcEntities EntityBuffer::Get() {
+	return instance()->buffer;
+}
+void EntityBuffer::Clear() {
+	instance()->buffer = IfcEntities(new IfcEntityList());
+}
+void EntityBuffer::Add(IfcUtil::IfcSchemaEntity e) {
+	instance()->buffer->push(e);
+}

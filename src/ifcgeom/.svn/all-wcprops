@@ -1,0 +1,143 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/ifcopenshell/!svn/ver/162/trunk/src/ifcgeom
+END
+IfcGeomWires.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/ifcopenshell/!svn/ver/162/trunk/src/ifcgeom/IfcGeomWires.cpp
+END
+IfcGeomObjects.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomObjects.cpp
+END
+IfcRegisterCreateCache.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterCreateCache.h
+END
+IfcShapeList.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcShapeList.h
+END
+IfcGeomObjects.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomObjects.h
+END
+IfcRegisterDef.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterDef.h
+END
+IfcRegisterConvertFace.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterConvertFace.h
+END
+IfcGeomHelpers.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomHelpers.cpp
+END
+IfcRegisterGeomHeader.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterGeomHeader.h
+END
+IfcRegisterConvertShape.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterConvertShape.h
+END
+IfcRegisterUndef.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterUndef.h
+END
+IfcGeomCurves.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomCurves.cpp
+END
+IfcGeomFunctions.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomFunctions.cpp
+END
+IfcRegisterPurgeCache.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterPurgeCache.h
+END
+IfcRegisterConvertWire.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterConvertWire.h
+END
+IfcRegisterIsShapeCollection.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterIsShapeCollection.h
+END
+IfcRegister.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegister.cpp
+END
+IfcRegister.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegister.h
+END
+IfcGeomFaces.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomFaces.cpp
+END
+IfcGeomShapes.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeomShapes.cpp
+END
+IfcGeom.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcGeom.h
+END
+IfcRegisterConvertShapes.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterConvertShapes.h
+END
+IfcRegisterConvertCurve.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/ifcopenshell/!svn/ver/145/trunk/src/ifcgeom/IfcRegisterConvertCurve.h
+END

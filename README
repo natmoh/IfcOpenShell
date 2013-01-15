@@ -1,0 +1,31 @@
+IfcOpenShell 
+============
+open source (LGPL) software library for working with the IFC file format
+
+
+http://IfcOpenShell.org
+
+Compiling on Ubuntu 32bit
+=========================
+
+sudo apt-get install cmake make libicu-dev build-essential libc6-dev python libpython-dev libboost-dev libopencascade-dev swig
+sudo apt-get update
+
+To build IfcOpenShell please take the following steps:
+$ cd /path/to/IfcOpenShell/cmake
+$ mkdir build
+$ cd build
+
+Optionally:
+  $ OCC_INCLUDE_PATH="/path/to/OpenCASCADE/include"
+  $ OCC_LIBRARY_PATH="/path/to/OpenCASCADE/lib"
+  $ export OCC_INCLUDE_PATH
+  $ export OCC_LIBRARY_PATH
+$ cmake ../
+$ make
+
+copy libifcjni2.so to src/ifcjni2/lib
+Run ProcessIfcFile.java
+
+inside src/ifcjni2/files there are 3 sample ifc files, user can test any ifc 2X3 step format file.
+
