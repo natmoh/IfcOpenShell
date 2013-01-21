@@ -1,10 +1,7 @@
 package org.ifcopenshell.model;
 
-import org.ifcopenshell.util.Utils;
-
 public class IfcGeometryObject extends IfcObject {
 
-	
 	private final IfcMesh mesh;
 
 	public IfcGeometryObject(int id, int parent_id, IfcMesh mesh,
@@ -27,18 +24,15 @@ public class IfcGeometryObject extends IfcObject {
 
 	public float[] getMatrix() {
 		return matrix;
-	}	
+	}
 
 	@Override
 	public String toString() {
-		return super.toString();
-		/*StringBuilder builder = new StringBuilder();
-		builder.append("{");
-		builder.append("\"geo\":{").append(mesh).append("},");
-		builder.append("\"mat\":").append(
-				Utils.floatArrayToString(null, matrix));
+		StringBuilder builder = new StringBuilder(super.toString());
+		builder.append(",");
+		builder.append("\"geo\":{").append(mesh).append("}");
 		builder.append("}");
-		return builder.toString();*/
+		return builder.toString();
 	}
 
 }

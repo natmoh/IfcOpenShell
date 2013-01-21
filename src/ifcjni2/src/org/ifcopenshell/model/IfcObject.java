@@ -3,6 +3,9 @@ package org.ifcopenshell.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.ifcopenshell.util.Utils;
+
 public class IfcObject {
 	protected final int id;
 	protected final int parent_id;
@@ -44,7 +47,7 @@ public class IfcObject {
 	public float[] getMatrix() {
 		return matrix;
 	}
-	
+
 	public IfcObject getParent() {
 		return parent;
 	}
@@ -68,19 +71,21 @@ public class IfcObject {
 				matrix[9], matrix[10], matrix[11], 1 };
 		matrix = mat;
 	}
-	
-	public void addChild(IfcObject object){
+
+	public void addChild(IfcObject object) {
 		children.add(object);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("pid " + parent_id);
-		builder.append(" type: " + type);
-		builder.append(" name: " + name);
-		builder.append(" guid: " + guid);
-		builder.append(" id: " + id);
+		builder.append("\"id\":").append("\"").append(id).append("\",");
+		builder.append("\"pid\":").append("\"").append(parent_id).append("\",");
+		builder.append("\"ty\":").append("\"").append(type).append("\",");
+		builder.append("\"guid\":").append("\"").append(StringEscapeUtils.escapeJava(guid)).append("\",");
+		builder.append("\"nm\":").append("\"").append(StringEscapeUtils.escapeJava(name)).append("\",");
+		builder.append("\"mat\":").append(
+				Utils.floatArrayToString(null, matrix));
 		return builder.toString();
 	}
 

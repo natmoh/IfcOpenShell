@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +22,9 @@ public class ProcessIfcFile {
 	private ResizingArrayStack<ParentChildHolder> idToParent;
 
 	private IfcObject root;
+	private PrintWriter writer;
 
-	public ProcessIfcFile(String libpath) throws Exception{
+	public ProcessIfcFile(String libpath) throws Exception {
 		library = new Library(libpath);
 		idToObject = new HashMap<Integer, IfcObject>();
 		idToParent = new ResizingArrayStack<ParentChildHolder>();
@@ -83,7 +84,7 @@ public class ProcessIfcFile {
 						+ geometryObject.getId());
 			}
 
-			//System.out.println(geometryObject);
+			// System.out.println(geometryObject);
 
 		}
 
@@ -109,8 +110,10 @@ public class ProcessIfcFile {
 				} else {
 					root = parent;
 				}
-				/*System.out.println("id:" + holder.id + " pid:" + holder.pid
-						+ " " + parent);*/
+				/*
+				 * System.out.println("id:" + holder.id + " pid:" + holder.pid +
+				 * " " + parent);
+				 */
 			}
 
 			IfcObject child = idToObject.get(holder.id);
@@ -124,10 +127,42 @@ public class ProcessIfcFile {
 		}
 	}
 
+	public void printIfcHierarchy() throws Exception {
+		if (root != null) {
+			try {
+				writer = new PrintWriter("sample1.json");
+				printHierarchy(root, 0);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				writer.close();
+				writer = null;
+			}
+		}
+	}
+
+	private void printHierarchy(IfcObject object, int indent) {
+		writer.print("{");
+		writer.print(object);
+		if (object.getChildren().size() > 0) {
+			writer.print(",\"ch\":[");
+			List<IfcObject> list = object.getChildren();
+			int len = list.size();
+			for (int i = 0; i < len - 1; i++) {
+				printHierarchy(list.get(i), indent + 1);
+				writer.print(",");
+			}
+			printHierarchy(list.get(len - 1), indent + 1);
+			writer.print("]");
+		}
+		writer.print("}");
+	}
+
 	public void release() {
 		library.Cleanup();
 		idToObject = null;
 		idToParent = null;
+		writer = null;
 	}
 
 	private static class ParentChildHolder {
@@ -167,9 +202,8 @@ public class ProcessIfcFile {
 
 	}
 
-	public static void main(String[] args) throws Exception{
-		ProcessIfcFile ifcFile = new ProcessIfcFile(
-				"lib/libifcjni2.so");
+	public static void main(String[] args) throws Exception {
+		ProcessIfcFile ifcFile = new ProcessIfcFile("lib/libifcjni2.so");
 		long t = System.currentTimeMillis();
 		System.out.println("Parsing File...");
 		ifcFile.parse("files/IFC.ifc");
@@ -183,6 +217,7 @@ public class ProcessIfcFile {
 		ifcFile.processHierarchy();
 		System.out.println("Processing Hierarchy Done (Time taken: "
 				+ (System.currentTimeMillis() - t) / (60000.0) + " ) mins");
+		ifcFile.printIfcHierarchy();
 		ifcFile.release();
 		System.out.println("Releasing Resource Done (Time taken: "
 				+ (System.currentTimeMillis() - t) / (60000.0) + " ) mins");

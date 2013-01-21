@@ -25,7 +25,7 @@ public final class IfcMesh {
 		StringBuilder builder = new StringBuilder();
 		builder.append("\"mesh\":{" + Utils.intArrayToString("f", indices)
 				+ ",");
-		builder.append(Utils.floatArrayToString("v", vertices) + ",");
+		builder.append(Utils.floatArrayToString("v", vertices));
 		return builder.toString();
 	}
 
